@@ -1,0 +1,29 @@
+@startuml
+hide empty methods
+
+class Member {
+  memberId : String
+  name : String
+  email : String
+}
+
+class Duck {
+  duckId : String
+  name : String
+}
+
+class Loan {
+  borrowedAt : DateTime
+  dueAt : DateTime
+  returnedAt : DateTime [0..1]
+}
+
+Member "1" -- "0..*" Loan : takes out >
+Loan "0..*" -- "1" Duck : is for >
+
+note bottom of Loan
+  dueAt = borrowedAt + 7 days (maximum)
+  A loan is current while returnedAt is empty;
+  a duck has at most one current loan.
+end note
+@enduml

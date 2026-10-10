@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuackLoan</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 52rem; margin: 2rem auto; padding: 0 1rem; color: #1f2933; }
+    h1 { margin-bottom: 0.25rem; }
+    .tagline { color: #52606d; margin-top: 0; }
+    .flash { padding: 0.75rem 1rem; border-radius: 6px; margin: 1rem 0; }
+    .flash.success { background: #e3f9e5; border: 1px solid #57ae5b; }
+    .flash.error { background: #ffe3e3; border: 1px solid #e12d39; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { text-align: left; padding: 0.6rem 0.5rem; border-bottom: 1px solid #d9e2ec; vertical-align: middle; }
+    .available { color: #2f8132; font-weight: 600; }
+    .on-loan { color: #ab091e; font-weight: 600; }
+    .detail { color: #52606d; font-size: 0.9em; }
+    form { display: flex; gap: 0.5rem; margin: 0; }
+    select, button { font: inherit; padding: 0.3rem 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>QuackLoan</h1>
+  <p class="tagline">Borrow a rubber debugging duck for up to 7 days.</p>
+
+  {% for category, message in get_flashed_messages(with_categories=true) %}
+    <div class="flash {{ category }}" role="status">{{ message }}</div>
+  {% endfor %}
+
+  <table>
+    <thead>
+      <tr><th>Duck</th><th>Status</th><th>Borrow</th></tr>
+    </thead>
+    <tbody>
+      {% for duck in ducks %}
+        {% set loan = duck.current_loan %}
+        <tr>
+          <td>{{ duck.name }} <span class="detail">({{ duck.duck_id }})</span></td>
+          <td>
+            {% if loan %}
+              <span class="on-loan">On loan</span>
+              <div class="detail">
+                {{ loan.member.name }} &middot; borrowed {{ loan.borrowed_at.strftime('%d %b %Y, %H:%M') }}
+                &middot; due {{ loan.due_at.strftime('%d %b %Y, %H:%M') }}
+              </div>
+            {% else %}
+              <span class="available">Available</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if not loan %}
+              <form method="post" action="{{ url_for('create_loan') }}">
+                <input type="hidden" name="duck_id" value="{{ duck.duck_id }}">
+                <select name="member_id" aria-label="Member borrowing {{ duck.name }}" required>
+                  {% for member in members %}
+                    <option value="{{ member.member_id }}">{{ member.name }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit">Borrow</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
