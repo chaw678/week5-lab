@@ -7,22 +7,50 @@ class Member {
   email : String
 }
 
-class Duck {
+abstract class Duck {
   duckId : String
   name : String
+  {abstract} loanPeriodDays() : Integer
+  {abstract} depositRequired() : Money
+}
+
+class StandardDuck {
+  loanPeriodDays() : Integer
+  depositRequired() : Money
+}
+
+class DeluxeDuck {
+  depositAmount : Money
+  loanPeriodDays() : Integer
+  depositRequired() : Money
 }
 
 class Loan {
   borrowedAt : DateTime
   dueAt : DateTime
   returnedAt : DateTime [0..1]
+  depositPaid : Money
 }
+
+Duck <|-- StandardDuck
+Duck <|-- DeluxeDuck
 
 Member "1" -- "0..*" Loan : takes out >
 Loan "0..*" -- "1" Duck : is for >
 
+note bottom of StandardDuck
+  loanPeriodDays() = 7
+  depositRequired() = 0
+end note
+
+note bottom of DeluxeDuck
+  loanPeriodDays() = 14
+  depositRequired() = depositAmount
+end note
+
 note bottom of Loan
-  dueAt = borrowedAt + 7 days (maximum)
+  dueAt = borrowedAt + duck.loanPeriodDays()
+  depositPaid = duck.depositRequired() when borrowed
   A loan is current while returnedAt is empty;
   a duck has at most one current loan.
 end note

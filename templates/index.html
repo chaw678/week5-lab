@@ -22,7 +22,7 @@
 </head>
 <body>
   <h1>QuackLoan</h1>
-  <p class="tagline">Borrow a rubber debugging duck for up to 7 days.</p>
+  <p class="tagline">Borrow a rubber debugging duck: Standard for 7 days, Deluxe for 14 with a returnable deposit.</p>
 
   {% for category, message in get_flashed_messages(with_categories=true) %}
     <div class="flash {{ category }}" role="status">{{ message }}</div>
@@ -30,7 +30,7 @@
 
   <table>
     <thead>
-      <tr><th>Duck</th><th>Status</th><th>Borrow</th></tr>
+      <tr><th>Duck</th><th>Terms</th><th>Status</th><th>Borrow</th></tr>
     </thead>
     <tbody>
       {% for duck in ducks %}
@@ -38,11 +38,19 @@
         <tr>
           <td>{{ duck.name }} <span class="detail">({{ duck.duck_id }})</span></td>
           <td>
+            {{ duck.label }}
+            <div class="detail">
+              {{ duck.loan_period_days() }} days
+              {% if duck.deposit_required() %}&middot; ${{ '%.2f'|format(duck.deposit_required()) }} deposit{% endif %}
+            </div>
+          </td>
+          <td>
             {% if loan %}
               <span class="on-loan">On loan</span>
               <div class="detail">
                 {{ loan.member.name }} &middot; borrowed {{ loan.borrowed_at.strftime('%d %b %Y, %H:%M') }}
                 &middot; due {{ loan.due_at.strftime('%d %b %Y, %H:%M') }}
+                {% if loan.deposit_paid %}&middot; ${{ '%.2f'|format(loan.deposit_paid) }} deposit held{% endif %}
               </div>
             {% else %}
               <span class="available">Available</span>

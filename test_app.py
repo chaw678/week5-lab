@@ -2,6 +2,7 @@
 
 import unittest
 from datetime import timedelta
+from decimal import Decimal
 
 from sqlalchemy import select
 
@@ -41,6 +42,26 @@ class BorrowDuckTest(unittest.TestCase):
 
         (loan,) = self.loans()
         self.assertEqual(loan.due_at - loan.borrowed_at, timedelta(days=7))
+
+    def test_deluxe_duck_is_due_fourteen_days_after_borrowing(self):
+        self.borrow("M001", "D005")
+
+        (loan,) = self.loans()
+        self.assertEqual(loan.due_at - loan.borrowed_at, timedelta(days=14))
+
+    def test_deluxe_duck_loan_records_the_deposit(self):
+        response = self.borrow("M001", "D005")
+
+        (loan,) = self.loans()
+        self.assertEqual(loan.deposit_paid, Decimal("10.00"))
+        self.assertIn(b"deposit taken: $10.00", response.data)
+
+    def test_standard_duck_loan_takes_no_deposit(self):
+        response = self.borrow("M001", "D001")
+
+        (loan,) = self.loans()
+        self.assertEqual(loan.deposit_paid, Decimal("0.00"))
+        self.assertNotIn(b"deposit taken", response.data)
 
     def test_duck_on_loan_cannot_be_borrowed(self):
         self.borrow("M001", "D001")
